@@ -1,0 +1,4 @@
+[build-system]
+# See https://www.python.org/dev/peps/pep-0518/#specification
+# Minimum requirements for the build system to execute.
+requires = ["setuptools", "wheel", "cx_freeze"]  # PEP 508 specifications.
