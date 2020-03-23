@@ -11,7 +11,7 @@ ignore=CVS
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
-ignore-patterns=setup,setup_cx
+ignore-patterns=
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
@@ -60,27 +60,7 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
-disable=import-outside-toplevel,
-    missing-function-docstring,
-    missing-class-docstring,
-    missing-module-docstring,
-    invalid-name,
-    no-else-return,
-    no-else-raise,
-    too-few-public-methods,
-    too-many-lines,
-    too-many-instance-attributes,
-    too-many-arguments,
-    too-many-locals,
-    too-many-branches,
-    too-many-statements,
-    too-many-public-methods,
-    redefined-outer-name,
-    unused-argument,
-    bad-continuation,
-    trailing-whitespace,
-    bad-whitespace,
-    line-too-long
+disable=
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -251,7 +231,7 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
-max-line-length=150
+max-line-length=135
 
 # Maximum number of lines in a module.
 max-module-lines=1000
