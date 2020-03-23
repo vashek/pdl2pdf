@@ -1,8 +1,10 @@
 """A command-line tool to convert a print job to PDF using Ghostscript/GhostPCL"""
 __version__ = "0.1.0"
 
+import subprocess
 import sys
-from enum import Enum, unique, auto
+from enum import Enum, auto, unique
+from pathlib import Path
 from typing import Type, BinaryIO
 
 import click
@@ -27,11 +29,27 @@ class ClickChoiceEnum(click.Choice):
         return self.enum_class[str_value]
 
 
+def this_exe() -> Path:
+    """The full absolute resolved path to this executable file."""
+    return Path(sys.executable if getattr(sys, "frozen", False) else sys.argv[0]).resolve()
+
+
+def dir_with_this_exe() -> Path:
+    """The full absolute resolved path to the directory containing this executable file."""
+    return this_exe().parent.resolve()
+
+
 # noinspection PyUnusedLocal
 def do_self_test(ctx, param, value):  # pylint: disable=unused-argument
     """Verifies that the program is able to run."""
     if value is True:
-        click.echo("ran OK")
+        click.echo("self-test started")
+        gpcl_exe = dir_with_this_exe() / "gpcl" / "gpcl6win64.exe"
+        # noinspection PyTypeChecker
+        subprocess.check_call([gpcl_exe], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        gs_exe = dir_with_this_exe() / "gs" / "bin" / "gswin64c.exe"
+        subprocess.check_call([gs_exe, "-h"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        click.echo("self-test OK")
         sys.exit(0)
 
 
