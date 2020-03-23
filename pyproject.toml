@@ -1,3 +1,23 @@
+# from https://github.com/psf/black/blob/master/pyproject.toml
+[tool.black]
+line-length = 135
+target-version = ['py38']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
 [build-system]
 # See https://www.python.org/dev/peps/pep-0518/#specification
 # Minimum requirements for the build system to execute.

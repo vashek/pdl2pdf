@@ -13,6 +13,7 @@ import click
 @unique
 class JobLanguage(Enum):
     """The supported print job languages."""
+
     PCL = auto()
     PS = auto()
 
@@ -20,6 +21,7 @@ class JobLanguage(Enum):
 class ClickChoiceEnum(click.Choice):
     """Improve on click.Choice so that choices is a class inheriting from Enum
     and the parameter value becomes the enumeration member."""
+
     def __init__(self, enum_class: Type[Enum], case_sensitive=True):
         super().__init__([member.name for member in enum_class], case_sensitive=case_sensitive)
         self.enum_class = enum_class
@@ -55,10 +57,10 @@ def do_self_test(ctx, param, value):  # pylint: disable=unused-argument
 
 @click.command()
 @click.version_option(version=__version__)
-@click.option('--self-test', is_flag=True, is_eager=True, callback=do_self_test, help="Do nothing and exit with exit code 0.")
-@click.option('--job-language', type=ClickChoiceEnum(JobLanguage, case_sensitive=False), required=True, help="Print job language.")
-@click.argument('input_fn', metavar="INPUT", type=click.Path(exists=True, dir_okay=False, resolve_path=True, allow_dash=True))
-@click.argument('output_f', metavar="OUTPUT", type=click.File('wb'))
+@click.option("--self-test", is_flag=True, is_eager=True, callback=do_self_test, help="Do nothing and exit with exit code 0.")
+@click.option("--job-language", type=ClickChoiceEnum(JobLanguage, case_sensitive=False), required=True, help="Print job language.")
+@click.argument("input_fn", metavar="INPUT", type=click.Path(exists=True, dir_okay=False, resolve_path=True, allow_dash=True))
+@click.argument("output_f", metavar="OUTPUT", type=click.File("wb"))
 def pdl2pdf(self_test: bool, job_language: JobLanguage, input_fn: str, output_f: BinaryIO):
     """Make a PDF file called <OUTPUT> out of print job file <INPUT>."""
     assert not self_test
