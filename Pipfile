@@ -7,10 +7,11 @@ verify_ssl = true
 pytest-runner = "*"
 pytest-pylint = "*"
 mypy = "*"
+pytest-mypy = "*"
 
 [packages]
-cx-freeze = "*"
-click = "*"
+cx-freeze = "~=6.1"
+click = "~=7.1.1"
 
 [requires]
 python_version = "3.8"

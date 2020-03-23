@@ -8,7 +8,7 @@ import urllib.parse
 import urllib.request
 import zipfile
 
-from setuptools.config import read_configuration
+from setuptools.config import read_configuration  # type: ignore
 
 GHOSTPCL_ZIP_URL = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs952/ghostpcl-9.52-win64.zip"
 GHOSTSCRIPT_EXE_URL = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs952/gs952w64.exe"
@@ -85,21 +85,11 @@ if __name__ == "__main__":
     # perhaps use cfg["options"]["packages"]?
     cfg = cfg["metadata"]
     cfg["options"] = {
-        "build_exe": {
-            "excludes": [
-                "test",
-                "tkinter",
-            ],
-            "include_files": data_files,
-        },
+        "build_exe": {"excludes": ["test", "tkinter",], "include_files": data_files,},
     }
 
-    import cx_Freeze.hooks
-    from cx_Freeze import setup, Executable
+    import cx_Freeze.hooks  # type: ignore
+    from cx_Freeze import setup, Executable  # type: ignore
+
     del cx_Freeze.hooks.load__ctypes
-    setup(
-        executables=[
-            Executable("pdl2pdf.py"),
-        ],
-        **cfg
-    )
+    setup(executables=[Executable("pdl2pdf.py"),], **cfg)

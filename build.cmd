@@ -1,6 +1,7 @@
 if "%1"=="FAST" goto FAST
 :SLOW
 call checks.cmd || echo ERROR && exit /b
+pipenv run pip freeze > requirements.txt || echo ERROR && exit /b
 if exist build rmdir /S /Q build || echo ERROR && exit /b
 pipenv run python setup_cx.py bdist bdist_msi || echo ERROR && exit /b
 pipenv run python setup.py sdist || echo ERROR && exit /b
