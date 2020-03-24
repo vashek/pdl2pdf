@@ -7,6 +7,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
+from typing import List, Tuple, Union
 
 from setuptools.config import read_configuration  # type: ignore
 
@@ -61,9 +62,9 @@ if __name__ == "__main__":
             with open(os.path.join(gpcl_dir, base_name), "wb") as f:
                 f.write(gpcl_zip.read(file_info))
 
-    data_files = [
-        gpcl_zip_fn,
-        gs_exe_fn,
+    data_files: List[Union[str, Tuple[str, str]]] = [
+        # gpcl_zip_fn,
+        # gs_exe_fn,
         (f"{GHOSTSCRIPT_INSTALL_DIR}/bin", r"gs\bin"),
         (f"{GHOSTSCRIPT_INSTALL_DIR}/iccprofiles", r"gs\iccprofiles"),
         (f"{GHOSTSCRIPT_INSTALL_DIR}/lib", r"gs\lib"),
@@ -85,11 +86,13 @@ if __name__ == "__main__":
     # perhaps use cfg["options"]["packages"]?
     cfg = cfg["metadata"]
     cfg["options"] = {
-        "build_exe": {"excludes": ["test", "tkinter",], "include_files": data_files,},
+        "build_exe": {"excludes": ["test", "tkinter"], "include_files": data_files},
+        "install": {"prefix": cfg["name"]},
+        "bdist_msi": {"initial_target_dir": f"C:\\SafeQ6\\" + cfg["name"]},
     }
 
     import cx_Freeze.hooks  # type: ignore
     from cx_Freeze import setup, Executable  # type: ignore
 
     del cx_Freeze.hooks.load__ctypes
-    setup(executables=[Executable("pdl2pdf.py"),], **cfg)
+    setup(executables=[Executable("pdl2pdf.py")], **cfg)
