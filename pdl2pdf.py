@@ -137,11 +137,22 @@ def pdl2pdf(
     else:
         raise RuntimeError("unknown language")
     params = [program, "-sPAPERSIZE=a4", "-sDEVICE=pdfwrite", "-o", full_output_fn, input_fn]
-    subprocess.check_call(params, timeout=timeout)
+    try:
+        subprocess.check_call(params, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        click.echo("The converter timed out")
+        try:
+            os.remove(full_output_fn)
+        except OSError:
+            # it might not yet have been created, so ignore the error if it can't be deleted for that reason
+            if os.path.exists(full_output_fn):
+                raise
+        sys.exit(2)
     if os.path.isfile(full_output_fn):
         click.echo(f"Successfully produced {full_output_fn}")
     else:
         click.echo(f"Something went wrong; after running the converter, there is no {full_output_fn}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
