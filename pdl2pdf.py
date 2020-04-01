@@ -1,5 +1,5 @@
 """A command-line tool to convert a print job to PDF using Ghostscript/GhostPCL"""
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 import datetime
 import os.path
@@ -7,7 +7,7 @@ import subprocess
 import sys
 from enum import Enum, auto, unique
 from pathlib import Path
-from typing import Optional, Type
+from typing import Optional, Type, Union
 
 import click
 
@@ -68,7 +68,7 @@ def get_gs_exe() -> str:
 
 
 # noinspection PyUnusedLocal
-def do_self_test(ctx, param, value):  # pylint: disable=unused-argument
+def do_self_test(ctx: click.Context, this_param: Union[click.Option, click.Parameter], value):  # pylint: disable=unused-argument
     """Verifies that the program is able to run."""
     if value is True:
         click.echo("self-test started")
@@ -76,6 +76,21 @@ def do_self_test(ctx, param, value):  # pylint: disable=unused-argument
         subprocess.check_call([get_gs_exe(), "-h"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         click.echo("self-test OK")
         sys.exit(0)
+    return value
+
+
+# noinspection PyUnusedLocal
+def allow_nonexistent_output_dir(
+    ctx: click.Context, this_param: Union[click.Option, click.Parameter], value
+):  # pylint: disable=unused-argument
+    if value is True:
+        for param in ctx.command.params:
+            assert isinstance(param, click.Parameter)
+            if param.name == "output_dir":
+                assert isinstance(param.type, click.types.Path)
+                # noinspection PyTypeHints
+                param.type.exists = False  # type: ignore
+    return value
 
 
 @click.command()
@@ -84,10 +99,24 @@ def do_self_test(ctx, param, value):  # pylint: disable=unused-argument
 @click.option("--job-language", type=ClickChoiceEnum(JobLanguage, case_sensitive=False), required=True, help="Print job language.")
 @click.option("--title", help="Optional text to append to the output file name.")
 @click.option("--timeout", metavar="S", type=click.IntRange(min=1), help="Optional time limit (in seconds) for the conversion to run.")
+@click.option(
+    "-c",
+    "--create-dir",
+    is_flag=True,
+    is_eager=True,
+    callback=allow_nonexistent_output_dir,
+    help="Automatically create the target directory if it doesn't exist",
+)
 @click.argument("input_fn", metavar="INPUT", type=click.Path(exists=True, dir_okay=False, resolve_path=True, allow_dash=True))
 @click.argument("output_dir", metavar="OUTPUT_DIR", type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True))
 def pdl2pdf(
-    self_test: bool, job_language: JobLanguage, title: Optional[str], timeout: Optional[int], input_fn: str, output_dir: str
+    self_test: bool,
+    job_language: JobLanguage,
+    title: Optional[str],
+    timeout: Optional[int],
+    input_fn: str,
+    output_dir: str,
+    create_dir: bool,
 ):  # pylint: disable=too-many-arguments
     """Make a PDF file in <OUTPUT_DIR> out of print job file <INPUT>."""
     assert not self_test
@@ -99,6 +128,8 @@ def pdl2pdf(
         output_fn = f"{timestamp}.pdf"
     full_output_fn = os.path.join(output_dir, output_fn)
     click.echo(f"Converting from {job_language} file {input_fn} to {full_output_fn}")
+    if create_dir:
+        os.makedirs(output_dir, exist_ok=True)
     if job_language == JobLanguage.PCL:
         program = get_gpcl_exe()
     elif job_language == JobLanguage.PS:
