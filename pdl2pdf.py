@@ -1,10 +1,11 @@
 """A command-line tool to convert a print job to PDF using Ghostscript/GhostPCL"""
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 import datetime
 import os.path
 import subprocess
 import sys
+import tempfile
 from enum import Enum, auto, unique
 from pathlib import Path
 from typing import Optional, Type, Union
@@ -83,6 +84,7 @@ def do_self_test(ctx: click.Context, this_param: Union[click.Option, click.Param
 def allow_nonexistent_output_dir(
     ctx: click.Context, this_param: Union[click.Option, click.Parameter], value
 ):  # pylint: disable=unused-argument
+    """Modifies the processing of parameters so that the existence of the output_dir is not required"""
     if value is True:
         for param in ctx.command.params:
             assert isinstance(param, click.Parameter)
@@ -136,18 +138,22 @@ def pdl2pdf(
         program = get_gs_exe()
     else:
         raise RuntimeError("unknown language")
-    params = [program, "-sPAPERSIZE=a4", "-sDEVICE=pdfwrite", "-o", full_output_fn, input_fn]
-    try:
-        subprocess.check_call(params, timeout=timeout)
-    except subprocess.TimeoutExpired:
-        click.echo("The converter timed out")
+    with tempfile.TemporaryDirectory(dir=output_dir) as temp_dir:
+        env = os.environ.copy()
+        env["TEMP"] = temp_dir
+        env["TMP"] = temp_dir
+        params = [program, "-sPAPERSIZE=a4", "-sDEVICE=pdfwrite", "-dBATCH", "-dNOPAUSE", "-o", full_output_fn, input_fn]
         try:
-            os.remove(full_output_fn)
-        except OSError:
-            # it might not yet have been created, so ignore the error if it can't be deleted for that reason
-            if os.path.exists(full_output_fn):
-                raise
-        sys.exit(2)
+            subprocess.check_call(params, timeout=timeout, env=env)
+        except subprocess.TimeoutExpired:
+            click.echo("The converter timed out")
+            try:
+                os.remove(full_output_fn)
+            except OSError:
+                # it might not yet have been created, so ignore the error if it can't be deleted for that reason
+                if os.path.exists(full_output_fn):
+                    raise
+            sys.exit(2)
     if os.path.isfile(full_output_fn):
         click.echo(f"Successfully produced {full_output_fn}")
     else:
