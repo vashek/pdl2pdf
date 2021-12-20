@@ -11,7 +11,7 @@ pytest-mypy = "*"
 
 [packages]
 cx-freeze = "~=6.1"
-click = "~=7.1.1"
+click = "~=8.0.3"
 
 [requires]
 python_version = "3.8"
