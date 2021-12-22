@@ -11,9 +11,9 @@ from typing import List, Tuple, Union
 
 from setuptools.config import read_configuration  # type: ignore
 
-GHOSTPCL_ZIP_URL = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs952/ghostpcl-9.52-win64.zip"
-GHOSTSCRIPT_EXE_URL = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs952/gs952w64.exe"
-GHOSTSCRIPT_INSTALL_DIR = r"c:\Program Files\gs\gs9.52"
+GHOSTPCL_ZIP_URL = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs9550/ghostpcl-9.55.0-win64.zip"
+GHOSTSCRIPT_EXE_URL = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs9550/gs9550w64.exe"
+GHOSTSCRIPT_INSTALL_DIR = r"c:\Program Files\gs\gs9.55.0"
 
 
 def download(url, dest_path=".download_cache"):

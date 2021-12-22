@@ -100,6 +100,8 @@ def allow_nonexistent_output_dir(
 @click.option("--self-test", is_flag=True, is_eager=True, callback=do_self_test, help="Do nothing and exit with exit code 0.")
 @click.option("--job-language", type=ClickChoiceEnum(JobLanguage, case_sensitive=False), required=True, help="Print job language.")
 @click.option("--title", help="Optional text to append to the output file name.")
+@click.option("--ocr-language", help="Language to use for OCR. Optional - if not specified, OCR will not be used.")
+@click.option("--ocr-text-only", is_flag=True, help="OCR only text.")
 @click.option("--timeout", metavar="S", type=click.IntRange(min=1), help="Optional time limit (in seconds) for the conversion to run.")
 @click.option(
     "-c",
@@ -115,6 +117,8 @@ def pdl2pdf(
     self_test: bool,
     job_language: JobLanguage,
     title: Optional[str],
+    ocr_language: Optional[str],
+    ocr_text_only: bool,
     timeout: Optional[int],
     input_fn: str,
     output_dir: str,
@@ -122,13 +126,7 @@ def pdl2pdf(
 ):  # pylint: disable=too-many-arguments
     """Make a PDF file in <OUTPUT_DIR> out of print job file <INPUT>."""
     assert not self_test
-    # this gives YYYYmmdd_HHMMSS_xxx where xxx means milliseconds - reasonably sure to be unique but still readable
-    timestamp = datetime.datetime.now().isoformat("_", timespec="milliseconds").replace(":", "").replace("-", "").replace(".", "_")
-    if title:
-        output_fn = f"{timestamp}-{make_safe_file_name_part(title)}.pdf"
-    else:
-        output_fn = f"{timestamp}.pdf"
-    full_output_fn = os.path.join(output_dir, output_fn)
+    full_output_fn = make_output_filename(output_dir, title)
     click.echo(f"Converting from {job_language} file {input_fn} to {full_output_fn}")
     if create_dir:
         os.makedirs(output_dir, exist_ok=True)
@@ -142,7 +140,10 @@ def pdl2pdf(
         env = os.environ.copy()
         env["TEMP"] = temp_dir
         env["TMP"] = temp_dir
-        params = [program, "-sPAPERSIZE=a4", "-sDEVICE=pdfwrite", "-dBATCH", "-dNOPAUSE", "-o", full_output_fn, input_fn]
+        device = "pdfocr24" if ocr_language and not ocr_text_only else "pdfwrite"
+        params = [program, "-sPAPERSIZE=a4", f"-sDEVICE={device}", "-dBATCH", "-dNOPAUSE", "-o", full_output_fn, input_fn]
+        if ocr_text_only:
+            params.insert(1, "-sUseOCR=Always")
         try:
             subprocess.check_call(params, timeout=timeout, env=env)
         except subprocess.TimeoutExpired:
@@ -159,6 +160,17 @@ def pdl2pdf(
     else:
         click.echo(f"Something went wrong; after running the converter, there is no {full_output_fn}")
         sys.exit(1)
+
+
+def make_output_filename(output_dir: str, title: Optional[str]) -> str:
+    # this gives YYYYmmdd_HHMMSS_xxx where xxx means milliseconds - reasonably sure to be unique but still readable
+    timestamp = datetime.datetime.now().isoformat("_", timespec="milliseconds").replace(":", "").replace("-", "").replace(".", "_")
+    if title:
+        output_fn = f"{timestamp}-{make_safe_file_name_part(title)}.pdf"
+    else:
+        output_fn = f"{timestamp}.pdf"
+    full_output_fn = os.path.join(output_dir, output_fn)
+    return full_output_fn
 
 
 if __name__ == "__main__":
