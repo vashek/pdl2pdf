@@ -1,5 +1,5 @@
 """A command-line tool to convert a print job to PDF using Ghostscript/GhostPCL"""
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 
 import datetime
 import os.path
@@ -140,10 +140,13 @@ def pdl2pdf(
         env = os.environ.copy()
         env["TEMP"] = temp_dir
         env["TMP"] = temp_dir
+        env["TESSDATA_PREFIX"] = str(dir_with_this_exe() / "tessdata")
         device = "pdfocr24" if ocr_language and not ocr_text_only else "pdfwrite"
         params = [program, "-sPAPERSIZE=a4", f"-sDEVICE={device}", "-dBATCH", "-dNOPAUSE", "-o", full_output_fn, input_fn]
+        if ocr_language:
+            params.insert(3, "-sOCRLanguage=" + ocr_language)
         if ocr_text_only:
-            params.insert(1, "-sUseOCR=Always")
+            params.insert(3, "-sUseOCR=Always")
         try:
             subprocess.check_call(params, timeout=timeout, env=env)
         except subprocess.TimeoutExpired:
