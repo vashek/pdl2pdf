@@ -11,12 +11,14 @@ from typing import List, Tuple, Union
 
 from setuptools.config import read_configuration  # type: ignore
 
-GHOSTPCL_ZIP_URL = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs952/ghostpcl-9.52-win64.zip"
-GHOSTSCRIPT_EXE_URL = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs952/gs952w64.exe"
-GHOSTSCRIPT_INSTALL_DIR = r"c:\Program Files\gs\gs9.52"
+GHOSTPCL_ZIP_URL = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs9550/ghostpcl-9.55.0-win64.zip"
+GHOSTSCRIPT_EXE_URL = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs9550/gs9550w64.exe"
+GHOSTSCRIPT_INSTALL_DIR = r"c:\Program Files\gs\gs9.55.0"
+ENGLISH_TESSDATA_URL = "https://github.com/tesseract-ocr/tessdata/raw/main/eng.traineddata"
+DOWNLOAD_CACHE_DIR = ".download_cache"
 
 
-def download(url, dest_path=".download_cache"):
+def download(url, dest_path=DOWNLOAD_CACHE_DIR):
     os.makedirs(dest_path, exist_ok=True)
     parsed = urllib.parse.urlparse(url)
     fn = parsed.path.split("/")[-1]
@@ -44,6 +46,7 @@ def download(url, dest_path=".download_cache"):
 if __name__ == "__main__":
     gpcl_zip_fn = download(GHOSTPCL_ZIP_URL)
     gs_exe_fn = download(GHOSTSCRIPT_EXE_URL)
+    eng_tessdata_fn = download(ENGLISH_TESSDATA_URL)
 
     if os.path.isdir(GHOSTSCRIPT_INSTALL_DIR):
         print(f"Found Ghostscript installed in {GHOSTSCRIPT_INSTALL_DIR}")
@@ -70,6 +73,7 @@ if __name__ == "__main__":
         (f"{GHOSTSCRIPT_INSTALL_DIR}/lib", r"gs\lib"),
         (f"{GHOSTSCRIPT_INSTALL_DIR}/Resource", r"gs\Resource"),
         (gpcl_dir, r"gpcl"),
+        (eng_tessdata_fn, r"tessdata\eng.traineddata"),
     ]
 
     for dll_mask in ["libcrypto-*.dll", "libssl-*.dll", "libffi-7.dll"]:
